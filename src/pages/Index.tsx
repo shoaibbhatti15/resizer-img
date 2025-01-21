@@ -5,21 +5,31 @@ import { ImagePreview } from '@/components/ImagePreview';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const [originalImage, setOriginalImage] = useState<HTMLImageElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [isResizing, setIsResizing] = useState(false);
   const [resizedImage, setResizedImage] = useState<Blob | null>(null);
+  const [fileType, setFileType] = useState<'image' | 'video'>('image');
 
-  const handleImageUpload = (file: File) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      setOriginalImage(img);
+  const handleFileUpload = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      setFileType('image');
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        setOriginalImage(img);
+        setPreviewUrl(url);
+      };
+      img.src = url;
+    } else if (file.type.startsWith('video/')) {
+      setFileType('video');
+      const url = URL.createObjectURL(file);
       setPreviewUrl(url);
-    };
-    img.src = url;
+      toast.info('Video conversion support coming soon!');
+    }
   };
 
   const handleResize = useCallback(async (width: number, height: number) => {
@@ -73,47 +83,77 @@ const Index = () => {
       <div className="container py-12">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-gray-900">Image Resizer</h1>
+            <h1 className="text-4xl font-bold text-gray-900">Media Converter</h1>
             <p className="text-lg text-gray-600">
-              Resize your images quickly and easily
+              Resize and convert your images and videos easily
             </p>
           </div>
 
-          {!originalImage ? (
-            <ImageUploader onImageUpload={handleImageUpload} />
-          ) : (
-            <div className="space-y-6">
-              <ImagePreview imageUrl={previewUrl} isResizing={isResizing} />
-              
-              <ResizeControls
-                originalWidth={originalImage.width}
-                originalHeight={originalImage.height}
-                onResize={handleResize}
-              />
+          {/* Advertisement Space */}
+          <div className="w-full h-[120px] bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+            <p className="text-gray-500">Advertisement Space</p>
+          </div>
 
-              <div className="flex justify-between items-center">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setOriginalImage(null);
-                    setPreviewUrl('');
-                    setResizedImage(null);
-                  }}
-                >
-                  Upload New Image
-                </Button>
-                
-                <Button
-                  onClick={handleDownload}
-                  disabled={!resizedImage}
-                  className="gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Download Resized Image
-                </Button>
+          <Tabs defaultValue="upload" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload">Upload</TabsTrigger>
+              <TabsTrigger value="convert">Convert</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upload">
+              {!originalImage ? (
+                <ImageUploader onImageUpload={handleFileUpload} />
+              ) : (
+                <div className="space-y-6">
+                  <ImagePreview imageUrl={previewUrl} isResizing={isResizing} />
+                  
+                  {fileType === 'image' && (
+                    <ResizeControls
+                      originalWidth={originalImage.width}
+                      originalHeight={originalImage.height}
+                      onResize={handleResize}
+                    />
+                  )}
+
+                  <div className="flex justify-between items-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setOriginalImage(null);
+                        setPreviewUrl('');
+                        setResizedImage(null);
+                      }}
+                    >
+                      Upload New File
+                    </Button>
+                    
+                    {fileType === 'image' && (
+                      <Button
+                        onClick={handleDownload}
+                        disabled={!resizedImage}
+                        className="gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download Resized Image
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="convert">
+              <div className="p-6 text-center bg-white rounded-lg border">
+                <p className="text-gray-600">Format conversion coming soon!</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  We'll support converting between different image and video formats.
+                </p>
               </div>
-            </div>
-          )}
+            </TabsContent>
+          </Tabs>
+
+          {/* Bottom Advertisement Space */}
+          <div className="w-full h-[120px] bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+            <p className="text-gray-500">Advertisement Space</p>
+          </div>
         </div>
       </div>
     </div>

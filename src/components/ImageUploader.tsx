@@ -11,10 +11,10 @@ export const ImageUploader = ({ onImageUpload }: ImageUploaderProps) => {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
         onImageUpload(file);
       } else {
-        toast.error('Please upload an image file');
+        toast.error('Please upload an image or video file');
       }
     }
   }, [onImageUpload]);
@@ -22,7 +22,8 @@ export const ImageUploader = ({ onImageUpload }: ImageUploaderProps) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp']
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
+      'video/*': ['.mp4', '.webm', '.ogg']
     },
     multiple: false
   });
@@ -41,11 +42,11 @@ export const ImageUploader = ({ onImageUpload }: ImageUploaderProps) => {
         <Upload className="w-12 h-12 text-gray-400" />
         <div className="text-center">
           <p className="text-lg font-medium text-gray-700">
-            {isDragActive ? 'Drop your image here' : 'Drag & drop your image here'}
+            {isDragActive ? 'Drop your file here' : 'Drag & drop your file here'}
           </p>
           <p className="mt-1 text-sm text-gray-500">or click to browse</p>
           <p className="mt-2 text-xs text-gray-400">
-            Supports: PNG, JPG, GIF, WEBP
+            Supports: Images (PNG, JPG, GIF, WEBP) and Videos (MP4, WEBM, OGG)
           </p>
         </div>
       </div>
