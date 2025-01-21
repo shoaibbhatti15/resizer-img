@@ -3,7 +3,7 @@ import { ImageUploader } from '@/components/ImageUploader';
 import { ResizeControls } from '@/components/ResizeControls';
 import { ImagePreview } from '@/components/ImagePreview';
 import { Button } from '@/components/ui/button';
-import { Download, Upload, Image as ImageIcon, Video } from 'lucide-react';
+import { Download, Upload, Image as ImageIcon, Video, Minimize } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -13,6 +13,7 @@ const Index = () => {
   const [isResizing, setIsResizing] = useState(false);
   const [resizedImage, setResizedImage] = useState<Blob | null>(null);
   const [fileType, setFileType] = useState<'image' | 'video'>('image');
+  const [compressionQuality, setCompressionQuality] = useState(0.7); // 70% quality by default
 
   const handleFileUpload = (file: File) => {
     if (file.type.startsWith('image/')) {
@@ -65,13 +66,52 @@ const Index = () => {
     }
   }, [originalImage]);
 
+  const handleCompress = useCallback(async () => {
+    if (!originalImage) return;
+    
+    setIsResizing(true);
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = originalImage.width;
+      canvas.height = originalImage.height;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('Could not get canvas context');
+      }
+
+      ctx.drawImage(originalImage, 0, 0);
+      
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+        }, 'image/jpeg', compressionQuality);
+      });
+
+      setResizedImage(blob);
+      setPreviewUrl(URL.createObjectURL(blob));
+      
+      // Calculate compression ratio
+      const originalSize = await fetch(originalImage.src).then(r => r.blob()).then(b => b.size);
+      const compressedSize = blob.size;
+      const ratio = ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
+      
+      toast.success(`Image compressed successfully! Reduced by ${ratio}%`);
+    } catch (error) {
+      toast.error('Error compressing image');
+      console.error(error);
+    } finally {
+      setIsResizing(false);
+    }
+  }, [originalImage, compressionQuality]);
+
   const handleDownload = useCallback(() => {
     if (!resizedImage) return;
     
     const url = URL.createObjectURL(resizedImage);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'resized-image.png';
+    a.download = 'processed-image.jpg';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -87,7 +127,7 @@ const Index = () => {
           <div className="text-center space-y-2">
             <h1 className="text-4xl font-bold text-gray-900">Media Converter</h1>
             <p className="text-lg text-gray-600">
-              Resize and convert your images and videos easily
+              Resize, compress, and convert your images and videos easily
             </p>
           </div>
 
@@ -97,16 +137,21 @@ const Index = () => {
           </div>
 
           <Tabs defaultValue="upload" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="upload" className="flex items-center gap-2">
                 <Upload className="w-4 h-4" />
                 Upload & Resize
+              </TabsTrigger>
+              <TabsTrigger value="compress" className="flex items-center gap-2">
+                <Minimize className="w-4 h-4" />
+                Compress
               </TabsTrigger>
               <TabsTrigger value="convert" className="flex items-center gap-2">
                 <Video className="w-4 h-4" />
                 Convert Format
               </TabsTrigger>
             </TabsList>
+            
             <TabsContent value="upload">
               {!originalImage ? (
                 <ImageUploader onImageUpload={handleFileUpload} />
@@ -148,6 +193,70 @@ const Index = () => {
                 </div>
               )}
             </TabsContent>
+
+            <TabsContent value="compress">
+              {!originalImage ? (
+                <ImageUploader onImageUpload={handleFileUpload} />
+              ) : (
+                <div className="space-y-6">
+                  <ImagePreview imageUrl={previewUrl} isResizing={isResizing} />
+                  
+                  <div className="space-y-4 p-6 bg-white rounded-lg shadow-sm border">
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-medium">Compression Quality</h3>
+                      <p className="text-sm text-gray-500">
+                        Lower quality = smaller file size. Recommended: 70%
+                      </p>
+                    </div>
+                    
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={compressionQuality}
+                      onChange={(e) => setCompressionQuality(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                    <p className="text-sm text-gray-600 text-center">
+                      {(compressionQuality * 100).toFixed(0)}%
+                    </p>
+                    
+                    <Button
+                      onClick={handleCompress}
+                      className="w-full gap-2"
+                      disabled={isResizing}
+                    >
+                      <Minimize className="w-4 h-4" />
+                      Compress Image
+                    </Button>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setOriginalImage(null);
+                        setPreviewUrl('');
+                        setResizedImage(null);
+                      }}
+                    >
+                      Upload New File
+                    </Button>
+                    
+                    <Button
+                      onClick={handleDownload}
+                      disabled={!resizedImage}
+                      className="gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download Compressed Image
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
             <TabsContent value="convert">
               <div className="p-6 text-center bg-white rounded-lg border">
                 <p className="text-gray-600">Format conversion coming soon!</p>
