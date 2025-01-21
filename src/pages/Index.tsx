@@ -3,7 +3,7 @@ import { ImageUploader } from '@/components/ImageUploader';
 import { ResizeControls } from '@/components/ResizeControls';
 import { ImagePreview } from '@/components/ImagePreview';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Upload, Image, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -56,8 +56,10 @@ const Index = () => {
 
       setResizedImage(blob);
       setPreviewUrl(URL.createObjectURL(blob));
+      toast.success('Image resized successfully!');
     } catch (error) {
       toast.error('Error resizing image');
+      console.error(error);
     } finally {
       setIsResizing(false);
     }
@@ -89,15 +91,21 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Advertisement Space */}
+          {/* Top Advertisement Space */}
           <div className="w-full h-[120px] bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
             <p className="text-gray-500">Advertisement Space</p>
           </div>
 
           <Tabs defaultValue="upload" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upload">Upload</TabsTrigger>
-              <TabsTrigger value="convert">Convert</TabsTrigger>
+              <TabsTrigger value="upload" className="flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                Upload & Resize
+              </TabsTrigger>
+              <TabsTrigger value="convert" className="flex items-center gap-2">
+                <Video className="w-4 h-4" />
+                Convert Format
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="upload">
               {!originalImage ? (
