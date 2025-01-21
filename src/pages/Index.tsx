@@ -3,7 +3,7 @@ import { ImageUploader } from '@/components/ImageUploader';
 import { ResizeControls } from '@/components/ResizeControls';
 import { ImagePreview } from '@/components/ImagePreview';
 import { Button } from '@/components/ui/button';
-import { Download, Upload, Image, Video } from 'lucide-react';
+import { Download, Upload, Image as ImageIcon, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -18,7 +18,7 @@ const Index = () => {
     if (file.type.startsWith('image/')) {
       setFileType('image');
       const url = URL.createObjectURL(file);
-      const img = new Image();
+      const img = document.createElement('img');
       img.onload = () => {
         setOriginalImage(img);
         setPreviewUrl(url);
