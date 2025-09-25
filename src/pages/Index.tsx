@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { ImageUploader } from '@/components/ImageUploader';
 import { ResizeControls } from '@/components/ResizeControls';
 import { ImagePreview } from '@/components/ImagePreview';
+import { FormatConverter } from '@/components/FormatConverter';
 import { Button } from '@/components/ui/button';
 import { Download, Upload, Image as ImageIcon, Video, Minimize } from 'lucide-react';
 import { toast } from 'sonner';
@@ -258,12 +259,7 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="convert">
-              <div className="p-6 text-center bg-white rounded-lg border">
-                <p className="text-gray-600">Format conversion coming soon!</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  We'll support converting between different image and video formats.
-                </p>
-              </div>
+              <FormatConverter />
             </TabsContent>
           </Tabs>
 
