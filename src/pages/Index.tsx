@@ -267,6 +267,13 @@ const Index = () => {
           <div className="w-full h-[120px] bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
             <p className="text-gray-500">Advertisement Space</p>
           </div>
+
+          {/* Copyright Footer */}
+          <footer className="text-center py-6 border-t border-gray-200 bg-white rounded-lg">
+            <p className="text-sm text-gray-600">
+              © 2024 Media Converter. All rights reserved - shoaibbhattiofficial
+            </p>
+          </footer>
         </div>
       </div>
     </div>
